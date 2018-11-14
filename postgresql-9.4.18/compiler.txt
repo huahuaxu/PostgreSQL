@@ -1,0 +1,22 @@
+#检查缺失的依赖包
+./configure --prefix=/vms/postgresql-9.4.18/
+＃安装缺失的依赖包
+yum install *readline**
+
+＃编译
+make
+make install
+
+
+#创建专用的系统账户及数据目录
+mkdir /vms/postgresql-data
+useradd postgres
+chown postgres /vms/postgresql-data
+su - postgres
+
+#初始化数据库
+./bin/initdb -D /vms/postgresql-data
+
+＃启动数据库服务
+./bin/postgres -D /vms/postgresql-data > pg.log 2>&1 &
+
