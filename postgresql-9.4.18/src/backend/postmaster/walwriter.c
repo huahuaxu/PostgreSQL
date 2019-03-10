@@ -241,6 +241,7 @@ WalWriterMain(void)
 	 */
 	ProcGlobal->walwriterLatch = &MyProc->procLatch;
 
+    ereport(LOG, (errmsg("%s[%d] [tid: %lu]: WALWriter process working...", __FILE__, __LINE__, pthread_self())));
 	/*
 	 * Loop forever
 	 */
@@ -299,6 +300,9 @@ WalWriterMain(void)
 			cur_timeout = WalWriterDelay;		/* in ms */
 		else
 			cur_timeout = WalWriterDelay * HIBERNATE_FACTOR;
+
+        //printf("%s[%d] [WALWriter] [tid: %lu]: waiting %lu ms...\n", __FILE__, __LINE__, pthread_self(), cur_timeout);
+		ereport(LOG, (errmsg("%s[%d] [WALWriter] [tid: %lu]: waiting %lu ms...", __FILE__, __LINE__, pthread_self(), cur_timeout)));
 
 		rc = WaitLatch(&MyProc->procLatch,
 					   WL_LATCH_SET | WL_TIMEOUT | WL_POSTMASTER_DEATH,

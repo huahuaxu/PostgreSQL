@@ -5561,5 +5561,3 @@ ExecProject(ProjectionInfo *projInfo, ExprDoneCond *isDone)
 	 */
 	return ExecStoreVirtualTuple(slot);
 }
-
-isNull =

@@ -326,6 +326,9 @@ SocketBackend(StringInfo inBuf)
 	 */
 	HOLD_CANCEL_INTERRUPTS();
 	pq_startmsgread();
+
+	ereport(LOG, (errmsg("%s[%d] [Postgres] [tid: %lu]: waiting for the qurey to read...", __FILE__, __LINE__, pthread_self())));
+
 	qtype = pq_getbyte();
 
 	if (qtype == EOF)			/* frontend disconnected */
@@ -348,6 +351,8 @@ SocketBackend(StringInfo inBuf)
 		}
 		return qtype;
 	}
+
+	ereport(LOG, (errmsg("%s[%d] [Postgres] [tid: %lu]: Recieved a qurey {qtype = %d}.", __FILE__, __LINE__, pthread_self(), qtype)));
 
 	/*
 	 * Validate message type code before trying to read body; if we have lost
@@ -578,6 +583,8 @@ pg_parse_query(const char *query_string)
 
 	if (log_parser_stats)
 		ResetUsage();
+
+	ereport(LOG, (errmsg("%s[%d] [Postgres] [tid: %lu]: raw parsing query = {%s}...", __FILE__, __LINE__, pthread_self(), query_string)));
 
 	raw_parsetree_list = raw_parser(query_string);
 
@@ -852,6 +859,7 @@ exec_simple_query(const char *query_string)
 	bool		isTopLevel;
 	char		msec_str[32];
 
+	ereport(LOG, (errmsg("%s[%d] [Postgres] [tid: %lu]: executing the simple query = {%s}...", __FILE__, __LINE__, pthread_self(), query_string)));
 
 	/*
 	 * Report query to various monitoring facilities.
@@ -943,6 +951,8 @@ exec_simple_query(const char *query_string)
 		 * destination.
 		 */
 		commandTag = CreateCommandTag(parsetree);
+
+		ereport(LOG, (errmsg("%s[%d] [Postgres] [tid: %lu]: commandTag = (%s)...", __FILE__, __LINE__, pthread_self(), commandTag)));
 
 		set_ps_display(commandTag, false);
 
@@ -3607,6 +3617,9 @@ PostgresMain(int argc, char *argv[],
 		MyStartTime = time(NULL);
 	}
 
+	ereport(LOG, (errmsg("%s[%d] [tid: %lu]: A Postgres process working{dbname = %s, username = %d, pid = %d}...", 
+				__FILE__, __LINE__, pthread_self(), dbname, username, MyProcPid)));
+
 	SetProcessingMode(InitProcessing);
 
 	/* Compute paths, if we didn't inherit them from postmaster */
@@ -4091,6 +4104,8 @@ PostgresMain(int argc, char *argv[],
 
 					query_string = pq_getmsgstring(&input_message);
 					pq_getmsgend(&input_message);
+
+					ereport(LOG, (errmsg("%s[%d] [Postgres] [tid: %lu]: query = {%s}", __FILE__, __LINE__, pthread_self(), query_string)));
 
 					if (am_walsender)
 						exec_replication_command(query_string);

@@ -68,7 +68,7 @@ main(int argc, char *argv[])
 {
 	bool		do_check_root = true;
 
-	printf("Welcome to the PostgreSQL world in ALIBABA!\n");
+	printf("Welcome to the PostgreSQL world in HUAWEI YUN!\n");
 
 	/*
 	 * If supported on the current platform, set up a handler to be called if

@@ -2985,6 +2985,11 @@ XLogBackgroundFlush(void)
 	/* back off to last completed page boundary */
 	WriteRqstPtr -= WriteRqstPtr % XLOG_BLCKSZ;
 
+	ereport(LOG, (errmsg("%s[%d] [tid: %lu]: xlog bg flush request %X/%X; write %X/%X; flush %X/%X", __FILE__, __LINE__, pthread_self(),
+			 (uint32) (WriteRqstPtr >> 32), (uint32) WriteRqstPtr,
+			 (uint32) (LogwrtResult.Write >> 32), (uint32) LogwrtResult.Write,
+		   (uint32) (LogwrtResult.Flush >> 32), (uint32) LogwrtResult.Flush)));
+
 	/* if we have already flushed that far, consider async commit records */
 	if (WriteRqstPtr <= LogwrtResult.Flush)
 	{
@@ -3034,7 +3039,7 @@ XLogBackgroundFlush(void)
 
 		WriteRqst.Write = WriteRqstPtr;
 		WriteRqst.Flush = WriteRqstPtr;
-		XLogWrite(WriteRqst, flexible);
+		XLogWrite(WriteRqst, flexible);  //刷写日志页到磁盘
 		wrote_something = true;
 	}
 	LWLockRelease(WALWriteLock);
